@@ -1,2 +1,5 @@
-# mlmc
- 
+# Multilevel Monte Carlo implementation
+
+This repository contains a Matlab implementation of the Multilevel Monte Carlo (MLMC) algorithm to solve the numerical example presented in "[Multilevel Monte Carlo methods and applications to elliptic PDEs with random coefficients](https://link.springer.com/article/10.1007/s00791-011-0160-x)" by Cliffe *et al* (2011).
+
+This implementation of the algorithm is part of the Ph.D. course "[058410 - AN INTRODUCTION TO FORWARD UNCERTAINTY QUANTIFICATION FOR STOCHASTIC PDES](https://www11.ceda.polimi.it/schedaincarico/schedaincarico/controller/scheda_pubblica/SchedaPublic.do?&evn_default=evento&al_id_srv=178&returnURL=https%3A%2F%2Fwww12.ceda.polimi.it%2Fportale_carriera_studente%2Fportale_carriera_studente%2Fcontroller%2FVisualizzaCarriere.do%3Fjaf_currentWFID%3Dmain%26EVN_SHOW_HOMEPAGE%3Devento%26__pj0%3D0%26__pj1%3D587f2aadd272ade97a5ff0587ab380c6&lang=IT&polij_device_category=PERSONAL_COMPUTER&al_id_srv_chiamante=2161&c_insegn=058410&lang=IT&matricola=227817&__pj0=0&__pj1=a8e55f11db9922064812e69a0207b3f8)" by Politecnico di Milano university.
