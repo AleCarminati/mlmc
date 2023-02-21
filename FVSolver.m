@@ -22,21 +22,21 @@ classdef FVSolver
 			if d==1
 				centralPointsGrid = linspace(1/m,1-1/m,m);
 				A = zeros(m,m);
-				b = zeros(m);
-				b(m) = -2*k(1);
+				b = zeros(m,1);
+				b(1) = -2*k(0);
 				harmMeans = 2./(1./k(centralPointsGrid(1:m-1))+1./k(centralPointsGrid(2:m)));
 				A = A+diag(harmMeans,1)+diag(harmMeans,-1);
-				A = A+diag([2*k(0),harmMeans(1:m-2)+harmMeans(2:m-1),2*k(1)]);
+				A = A-diag([2*k(0)+harmMeans(1),harmMeans(1:m-2)+harmMeans(2:m-1),2*k(1)+harmMeans(m-1)]);
 				obj.solutionPoints = A\b;
 			end
 		end
 
 		function value = getSolutionValue(obj,x)
 			if obj.d==1
-				if x<0 || x>1
-					error("Invalid input: x=%f, but x must be in the range [0,1].",x);
-				end
-				value = obj.solutionPoints(floor(x*obj.m));
+				if not(all(x>=0)) || not(all(x<=1))
+					error("Invalid input: x must be in the range [0,1].");
+				end 
+				value = obj.solutionPoints(max(1,ceil(x*obj.m)));
 			end
 		end
 	end
