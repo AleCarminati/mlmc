@@ -3,7 +3,7 @@
 
 %%
 clc 
-d =1;
+d = 1;
 m = 1024;
 k = @(x) sqrt(x)+1;
 solver = FVSolver(d,k,m);
@@ -16,7 +16,7 @@ plot(x_plot, y_plot,x_plot, y_true)
 
 %%
 clc 
-d =1;
+d = 1;
 m = 256;
 k = @(x) cosh(x);
 solver = FVSolver(d,k,m);
@@ -29,7 +29,7 @@ plot(x_plot, y_plot,x_plot, y_true)
 
 %%
 clc 
-d =1;
+d = 1;
 m = 256;
 k = @(x) exp(x);
 solver = FVSolver(d,k,m);
@@ -55,7 +55,7 @@ plot(x_plot, y_plot,x_plot,y_true)
 
 %%
 clc 
-d =1;
+d = 1;
 m = 256;
 k = @(x) x.^2+x+2;
 solver = FVSolver(d,k,m);
@@ -69,7 +69,7 @@ plot(x_plot, y_plot,x_plot, y_true)
 
 %%
 clc 
-d =1;
+d = 1;
 m = 256;
 k = @(x) 1./(1+exp(x));
 solver = FVSolver(d,k,m);
@@ -77,5 +77,18 @@ solver = FVSolver(d,k,m);
 x_plot = linspace(0,1,1024);
 y_plot = solver.getSolutionValue(x_plot);
 f_true = @(x) (-x-exp(x)+exp(1)+1)/exp(1);
+y_true = f_true(x_plot);
+plot(x_plot, y_plot,x_plot, y_true)
+
+%%
+clc 
+d = 1;
+m = 256;
+k = @(x) x.^(-2);
+solver = FVSolver(d,k,m);
+
+x_plot = linspace(0,1,1024);
+y_plot = solver.getSolutionValue(x_plot);
+f_true = @(x) 1-x.^3;
 y_true = f_true(x_plot);
 plot(x_plot, y_plot,x_plot, y_true)

@@ -27,10 +27,10 @@ classdef FVSolver
 			end
 			
 			if d==1
-				k0 = k(0);
-				k1 = k(1);
 				centralPointsGrid = linspace(1/m,1-1/m,m);
 				kCentralPointsGrid = k(centralPointsGrid);
+				k0 = kCentralPointsGrid(1);
+				k1 = kCentralPointsGrid(m);
 				A = zeros(m,m);
 				b = zeros(m,1);
 				b(1) = -2*k0;
