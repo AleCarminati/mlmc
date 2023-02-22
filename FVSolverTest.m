@@ -92,3 +92,25 @@ y_plot = solver.getSolutionValue(x_plot);
 f_true = @(x) 1-x.^3;
 y_true = f_true(x_plot);
 plot(x_plot, y_plot,x_plot, y_true)
+
+%%
+clc 
+d = 2;
+m = 16;
+k = @(x,y) sinh(x)+exp(-15.*(1-y));
+solver = FVSolver(d,k,m);
+
+[x_plot,y_plot] = meshgrid(linspace(0,1,1024));
+z_plot = solver.getSolutionValue(x_plot,y_plot);
+surf(x_plot,y_plot,z_plot)
+
+%%
+clc 
+d = 2;
+m = 32;
+k = @(x,y) sinh(0.5*x./y);
+solver = FVSolver(d,k,m);
+
+[x_plot,y_plot] = meshgrid(linspace(0,1,1024));
+z_plot = solver.getSolutionValue(x_plot,y_plot);
+surf(x_plot,y_plot,z_plot)
