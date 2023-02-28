@@ -18,7 +18,7 @@ classdef RandomFieldSampler
 	end
 	
 	methods
-		function obj = RandomFieldSampler(m_kl, sigma2, lambda)
+		function obj = RandomFieldSampler(m_kl, sigma2, lambda, d)
 			if d~=1 && d~=2
 				error("Invalid input: d=%d, but d must be equal to 1 or 2.", d);
 			end
@@ -45,9 +45,11 @@ classdef RandomFieldSampler
 				prodVec = reshape(prodMatr,[],1);
 				[obj.eigenvalues, idx] = sort(prodVec,'descend');
 				% Remove all the zeros of the triangular matrix
-				obj.eigenvalues = reshape(obj.eigenvalues,obj.m_kl,1);
-				obj.idx_1_2d = reshape(obj.idx_1_2d(idx),m_kl,1);
-				obj.idx_2_2d = reshape(obj.idx_2_2d(idx),m_kl,1);
+				obj.eigenvalues = obj.eigenvalues(1:obj.m_kl);
+				obj.idx_1_2d = obj.idx_1_2d(idx);
+				obj.idx_1_2d = obj.idx_1_2d(1:obj.m_kl);
+				obj.idx_2_2d = obj.idx_2_2d(idx);
+				obj.idx_2_2d = obj.idx_2_2d(1:obj.m_kl);
 			end
 			
 			obj = obj.updateRandom();
@@ -58,19 +60,21 @@ classdef RandomFieldSampler
 		
 		function w = findSolutionTransEq(obj)
 			% This function finds the first m_kl solutions of a transcendental 
-			% equation of the form tan(x)-(2lambda)/(lambda^2x^2+1)=0, using the 
-			% Matlab function fzero. The solutions are stored in the vector w.
+			% equation of the form tan(x)-(2lambda*x)/(lambda^2x^2-1)=0, using 
+			% the Matlab function fzero. The solutions are stored in the vector 
+			% w.
 			% Output:
 			% - w: a vector of size m_kl containing the computed solutions
 
-			f = @(x) tan(x)-(2*obj.lambda)./(obj.lambda^2.*x.^2+1);
+			f = @(x) tan(x)-(2*obj.lambda.*x)./(obj.lambda^2.*x.^2-1);
 			w = zeros(obj.m_kl,1);
 			idx = 1;
-			w(idx) = 0;
-			idx=idx+1;
 			while idx<=obj.m_kl
-				zero_1 = fzero(f,[-pi/2*(idx+1), -pi/2*(idx-1)]);
-				zero_2 = fzero(f,[pi/2*(idx-1), pi/2*(idx+1)]);
+				% To avoid problems with tan(x) near pi/2(idx+1), we add a little
+				% epsilon.
+				eps = 1e-9;
+				zero_1 = fzero(f,[-pi/2*(idx+2)+eps, -pi/2*(idx)-eps]);
+				zero_2 = fzero(f,[pi/2*(idx)+eps, pi/2*(idx+2)-eps]);
 				w(idx) = min(zero_1,zero_2);
 				idx=idx+1;
 				if(idx<=obj.m_kl)
@@ -92,8 +96,8 @@ classdef RandomFieldSampler
 					"the random field value must be a column vector.");
 			end
 
-			y = varargin{1};
 			if obj.d==2 
+				y = varargin{1};
 				% Check that y is a column vector.
 				if size(y,2)~=1
 				error("Input error. The input of the function to compute " + ...
