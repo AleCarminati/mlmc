@@ -10,6 +10,7 @@ classdef RandomFieldSampler
 			% expansion 
 		A_n % vector of the normalizing coefficents of the eigenfunctions of 
 			% the KL expansion in 1D
+		b_n % vector of the eigenfunctions of the KL expansion in 1D
 		idx_1_2d % Indexes of the first 1D eigenvalue that is used in the 
 			% product to obtain the 2D eigenvalue
 		idx_2_2d % Indexes of the second 1D eigenvalue that is used in the 
@@ -45,13 +46,14 @@ classdef RandomFieldSampler
 				[obj.eigenvalues, idx] = sort(prodVec,'descend');
 				% Remove all the zeros of the triangular matrix
 				obj.eigenvalues = reshape(obj.eigenvalues,obj.m_kl,1);
-				obj.idx_1_2d = reshape(obj.idx_1_2d(idx),m_kl);
-				obj.idx_2_2d = reshape(obj.idx_2_2d(idx),m_kl);
+				obj.idx_1_2d = reshape(obj.idx_1_2d(idx),m_kl,1);
+				obj.idx_2_2d = reshape(obj.idx_2_2d(idx),m_kl,1);
 			end
 			
 			obj = obj.updateRandom();
 
-			%% TODO: create function handles for b^{1D}_n
+			obj.b_n = @(x) obj.A_n.*(sin(obj.w.*x)+ ...
+				obj.lambda.*obj.w.*cos(obj.w.*x));
 		end
 		
 		function w = findSolutionTransEq(obj)
@@ -83,14 +85,41 @@ classdef RandomFieldSampler
 				error("Input error. When working in 2D, the input requires " + ...
 					"also the second coordinate.");
 			end
+
+			% Check that x is a column vector.
+			if size(x,2)~=1
+				error("Input error. The input of the function to compute " + ...
+					"the random field value must be a column vector.");
+			end
+
 			y = varargin{1};
+			if obj.d==2 
+				% Check that y is a column vector.
+				if size(y,2)~=1
+				error("Input error. The input of the function to compute " + ...
+					"the random field value must be a column vector.");
+				end
+				% Check that x and y are compatible.
+				if length(x)~=length(y)
+					error("Input error. The inputs of the function to compute" + ...
+						" the random field value must have the same length");
+				end
+			end
 
-			value = obj.xi.*sqrt(obj.eigenvalues);
-
+			value = zeros(length(x),1);
 			if obj.d == 1
-				%
+				for i=1:length(x)
+					value(i) = sum(obj.xi.*sqrt(obj.eigenvalues).*obj.b_n(x(i)));
+				end
 			else
-				%
+				for i=1:length(x)
+					eigfun_res_x = obj.b_n(x(i));
+					eigfun_res_x = eigfun_res_x(obj.idx_1_2d);
+					eigfun_res_y = obj.b_n(y(i));
+					eigfun_res_y = eigfun_res_y(obj.idx_2_2d);
+					value(i) = sum(obj.xi.*sqrt(obj.eigenvalues(obj.idx_1_2d) ...
+						.*obj.eigenvalues(obj.idx_2_2d)).*eigfun_res_x.*eigfun_res_y);
+				end
 			end
 		end
 
