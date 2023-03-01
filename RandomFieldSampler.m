@@ -85,18 +85,18 @@ classdef RandomFieldSampler
 					"also the second coordinate.");
 			end
 
-			% Check that x is a column vector.
-			if size(x,2)~=1
+			% Check that x is a column vector or a scalar.
+			if not(isscalar(x)) && size(x,2)~=1
 				error("Input error. The input of the function to compute " + ...
-					"the random field value must be a column vector.");
+					"the random field value must be a column vector or a scalar.");
 			end
 
 			if obj.d==2 
 				y = varargin{1};
-				% Check that y is a column vector.
-				if size(y,2)~=1
+				% Check that y is a column vector or a scalar.
+				if not(isscalar(y)) && size(y,2)~=1
 				error("Input error. The input of the function to compute " + ...
-					"the random field value must be a column vector.");
+					"the random field value must be a column vector or a scalar.");
 				end
 				% Check that x and y are compatible.
 				if length(x)~=length(y)
@@ -120,12 +120,13 @@ classdef RandomFieldSampler
 						.*obj.eigenvalues(obj.idx_2_2d)).*eigfun_res_x.*eigfun_res_y);
 				end
 			end
+			value = exp(value);
 		end
 
 		function obj = updateRandom(obj)
 			% This function updates the random part of the KL expansion,
 			% generating a new random field.
-			obj.xi =randn(obj.m_kl,1);
+			obj.xi = randn(obj.m_kl,1);
 		end
 	end
 end

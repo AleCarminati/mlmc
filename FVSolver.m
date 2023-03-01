@@ -39,7 +39,7 @@ classdef FVSolver
 			end
 			
 			if d==1
-				centralPointsGrid = linspace(1/m,1-1/m,m);
+				centralPointsGrid = linspace(1/m,1-1/m,m)';
 				kCentralPointsGrid = k(centralPointsGrid);
 				k0 = kCentralPointsGrid(1);
 				k1 = kCentralPointsGrid(m);
@@ -55,7 +55,10 @@ classdef FVSolver
 			else
 				[centralPointsGrid_1, centralPointsGrid_2] =...
 					meshgrid(linspace(1/m,1-1/m,m)); 
+				centralPointsGrid_1 = reshape(centralPointsGrid_1,[],1);
+				centralPointsGrid_2 = reshape(centralPointsGrid_2,[],1);
 				kcentralPointsGrid = k(centralPointsGrid_1, centralPointsGrid_2);
+				kcentralPointsGrid = reshape(kcentralPointsGrid,m,m);
 				% Compute the harmonic means between k_{i,j} and k_{i+1,j}
 				harmMeans_1 = 2./(1./kcentralPointsGrid(1:m-1,:)+1./ ...
 					kcentralPointsGrid(2:m,:));
