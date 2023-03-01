@@ -41,7 +41,7 @@ classdef RandomFieldSampler
 				[obj.idx_1_2d,obj.idx_2_2d]=meshgrid(1:obj.m_kl);
 				obj.idx_1_2d = reshape(obj.idx_1_2d,[],1);
 				obj.idx_2_2d = reshape(obj.idx_2_2d,[],1);
-				prodMatr = tril(obj.eigenvalues*obj.eigenvalues');
+				prodMatr = obj.eigenvalues*obj.eigenvalues';
 				prodVec = reshape(prodMatr,[],1);
 				[obj.eigenvalues, idx] = sort(prodVec,'descend');
 				% Remove all the zeros of the triangular matrix
@@ -51,6 +51,8 @@ classdef RandomFieldSampler
 				obj.idx_2_2d = obj.idx_2_2d(idx);
 				obj.idx_2_2d = obj.idx_2_2d(1:obj.m_kl);
 			end
+
+			obj.eigenvalues = obj.sigma2.*obj.eigenvalues;
 			
 			obj = obj.updateRandom();
 
@@ -59,28 +61,21 @@ classdef RandomFieldSampler
 		end
 		
 		function w = findSolutionTransEq(obj)
-			% This function finds the first m_kl solutions of a transcendental 
-			% equation of the form tan(x)-(2lambda*x)/(lambda^2x^2-1)=0, using 
-			% the Matlab function fzero. The solutions are stored in the vector 
-			% w.
+			% This function finds the solutions to a transcendental equation 
+			% using the fzero function in Matlab.
 			% Output:
 			% - w: a vector of size m_kl containing the computed solutions
 
 			f = @(x) tan(x)-(2*obj.lambda.*x)./(obj.lambda^2.*x.^2-1);
 			w = zeros(obj.m_kl,1);
-			idx = 1;
-			while idx<=obj.m_kl
+			for idx=1:obj.m_kl
 				% To avoid problems with tan(x) near pi/2(idx+1), we add a little
 				% epsilon.
-				eps = 1e-9;
-				zero_1 = fzero(f,[-pi/2*(idx+2)+eps, -pi/2*(idx)-eps]);
-				zero_2 = fzero(f,[pi/2*(idx)+eps, pi/2*(idx+2)-eps]);
-				w(idx) = min(zero_1,zero_2);
-				idx=idx+1;
-				if(idx<=obj.m_kl)
-					w(idx)=max(zero_1,zero_2);
-					idx = idx+1;
-				end
+				eps = 1e-12;
+				% Since f is an odd function and the eigenvalues are computed as 
+				% the square of the solution, only the positive solutions
+				% are returned.  
+				w(idx) = fzero(f,[pi/2*(2*idx-1)+eps, pi/2*(2*idx+1)-eps]);
 			end
 		end
 
