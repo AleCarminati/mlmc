@@ -31,7 +31,7 @@ classdef Level
 		function obj = updateNumSamples(obj,N_l)
 			% Updates the number of samples for the level. If the new number of
 			% samples is greater than the old one, it generates new samples and
-			% updates the value of Y_l.
+			% updates the value of Y_l. Otherwise, it does nothing.
 
 			if N_l>obj.N_l
 				partialSum = obj.N_l*obj.Y_l;
