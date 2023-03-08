@@ -60,25 +60,6 @@ classdef RandomFieldSampler
 				obj.lambda.*obj.w.*cos(obj.w.*x));
 		end
 		
-		function w = findSolutionTransEq(obj)
-			% This function finds the solutions to a transcendental equation 
-			% using the fzero function in Matlab.
-			% Output:
-			% - w: a vector of size m_kl containing the computed solutions
-
-			f = @(x) tan(x)-(2*obj.lambda.*x)./(obj.lambda^2.*x.^2-1);
-			w = zeros(obj.m_kl,1);
-			for idx=1:obj.m_kl
-				% To avoid problems with tan(x) near pi/2(idx+1), we add a little
-				% epsilon.
-				eps = 1e-12;
-				% Since f is an odd function and the eigenvalues are computed as 
-				% the square of the solution, only the positive solutions
-				% are returned.  
-				w(idx) = fzero(f,[pi/2*(2*idx-1)+eps, pi/2*(2*idx+1)-eps]);
-			end
-		end
-
 		function value = computeRandomFieldValue(obj,x,varargin)
 			if obj.d==2 && nargin~=3
 				error("Input error. When working in 2D, the input requires " + ...
@@ -127,6 +108,27 @@ classdef RandomFieldSampler
 			% This function updates the random part of the KL expansion,
 			% generating a new random field.
 			obj.xi = randn(obj.m_kl,1);
+		end
+	end
+
+	methods(Access=private)
+		function w = findSolutionTransEq(obj)
+			% This function finds the solutions to a transcendental equation 
+			% using the fzero function in Matlab.
+			% Output:
+			% - w: a vector of size m_kl containing the computed solutions
+
+			f = @(x) tan(x)-(2*obj.lambda.*x)./(obj.lambda^2.*x.^2-1);
+			w = zeros(obj.m_kl,1);
+			for idx=1:obj.m_kl
+				% To avoid problems with tan(x) near pi/2(idx+1), we add a little
+				% epsilon.
+				eps = 1e-12;
+				% Since f is an odd function and the eigenvalues are computed as 
+				% the square of the solution, only the positive solutions
+				% are returned.  
+				w(idx) = fzero(f,[pi/2*(2*idx-1)+eps, pi/2*(2*idx+1)-eps]);
+			end
 		end
 	end
 end

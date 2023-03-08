@@ -43,7 +43,9 @@ classdef Level
 				obj.N_l = N_l;
 			end
 		end
-
+	end
+	
+	methods(Access=private)
 		function value = getNewSample(obj)
 			% Generates a new sample for the level and computes the value of the
 			% QoI using an FVSolver object. If the level is not the first level,
@@ -72,7 +74,7 @@ classdef Level
 			% product of the probability density function and the diffusion
 			% coefficient over the domain. It uses the midpoint rule for
 			% integration.
-			
+
 			if obj.d == 1 
 				% Numerically compute the left derivative of p in 1.
 				derivative = (solver.solutionPoints(end)- ...
