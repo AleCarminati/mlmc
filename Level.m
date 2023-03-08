@@ -1,4 +1,11 @@
 classdef Level
+% The Level class represents a level in the multi-level Monte Carlo method
+% for solving stochastic differential equations. It stores information
+% about the level, such as the number of samples, the value of the
+% estimator, the number of dimensions, the mesh size used in the level,
+% and whether it is the first level. It also stores an object of the
+% RandomFieldSampler class for sampling from the random field.
+
 	properties
 		N_l % Number of samples for that level
 		Y_l % Value of the estimator
@@ -7,7 +14,7 @@ classdef Level
 			% is Q_{M_L}-Q_{M_{L-1}}, m is equal to M_L.
 		isLevel0 % Represents if the class represents the first level.
 		randFieldSampl % Object of class RandomFieldSampler to sample from the 
-			% random field
+			% random field.
 	end
 	
 	methods
@@ -22,8 +29,10 @@ classdef Level
 		end
 		
 		function obj = updateNumSamples(obj,N_l)
-			% If the new number of samples is greater than the old one, do
-			% the update. Otherwise, do nothing.
+			% Updates the number of samples for the level. If the new number of
+			% samples is greater than the old one, it generates new samples and
+			% updates the value of Y_l.
+
 			if N_l>obj.N_l
 				partialSum = obj.N_l*obj.Y_l;
 				diffN = N_l-obj.N_l;
@@ -36,6 +45,10 @@ classdef Level
 		end
 
 		function value = getNewSample(obj)
+			% Generates a new sample for the level and computes the value of the
+			% QoI using an FVSolver object. If the level is not the first level,
+			% it also subtracts the QoI computed from the previous level.
+
 			obj.randFieldSampl = obj.randFieldSampl.updateRandom();
 			% Workaround to pass the method as a function handle.
 			if obj.d==1
@@ -52,6 +65,14 @@ classdef Level
 		end
 
 		function value = getQoI(obj,solver)
+			% Computes the value of the QoI for the given solver object. For a
+			% 1-dimensional problem, it numerically computes the left derivative
+			% of the probability density function of the random field at x=1.
+			% For a higher-dimensional problem, it numerically integrates the
+			% product of the probability density function and the diffusion
+			% coefficient over the domain. It uses the midpoint rule for
+			% integration.
+			
 			if obj.d == 1 
 				% Numerically compute the left derivative of p in 1.
 				derivative = (solver.solutionPoints(end)- ...
