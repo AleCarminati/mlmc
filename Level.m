@@ -8,6 +8,7 @@ classdef Level
 
 	properties
 		N_l % Number of samples for that level
+		Y_vec % Vector the samples for the level
 		Y_l % Value of the estimator
 		d % Number of dimensions
 		m % The value of the biggest mesh size used in the level. If the level 
@@ -34,10 +35,17 @@ classdef Level
 			% updates the value of Y_l. Otherwise, it does nothing.
 
 			if N_l>obj.N_l
+				% Increase the dimensions of the vector of samples.
+				temp_vector = zeros(N_l,1);
+				temp_vector(1:obj.N_l) = obj.Y_vec;
+				obj.Y_vec = temp_vector;
+
 				partialSum = obj.N_l*obj.Y_l;
 				diffN = N_l-obj.N_l;
 				for i=1:diffN
-					partialSum = partialSum + obj.getNewSample();
+					sampled_value = obj.getNewSample();
+					obj.Y_vec(obj.N_l + i) = sampled_value; 
+					partialSum = partialSum + sampled_value;
 				end
 				obj.Y_l = partialSum/N_l;
 				obj.N_l = N_l;
