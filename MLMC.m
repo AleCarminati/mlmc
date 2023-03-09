@@ -63,27 +63,29 @@ classdef MLMC
 			ylabel("$\log_2$ variance","Interpreter","latex")
 		end
 
-		function obj = run_epsilon_fixed(obj, alpha, eps)
+		function obj = run_epsilon_fixed(obj, alpha, beta, eps)
 			% This function runs the MLMC algorithm for a fixed error tolerance
 			% eps and a fixed convergence rate alpha.
 
-			N_0 = 100;
+			N_0 = 10;
 			obj.levels = Level(N_0,obj.d, obj.m_0, true,obj.rfs);
 			n_levels = 1;
 			convergence = false;
 			while not(convergence)
-				disp(n_levels)
+				fprintf("Number of levels: %d\n", n_levels)
+				
 				% Compute optimal number of samples for each level and evaluate 
-				% extra samples
+				% extra samples.
+				sum = obj.computeSumVarCost;
 				for idx=1:n_levels
 					var_level = var(obj.levels(idx).Y_vec);
-					cost_level = (obj.m_0*2^(idx-1))^obj.gamma;
+					cost_level = (obj.m_0^obj.d*2^(idx-1))^obj.gamma;
 					obj.levels(idx) = obj.levels(idx).updateNumSamples( ...
-						ceil(sqrt(var_level/cost_level)));
+						ceil(2*eps^(-2)*sqrt(var_level/cost_level)*sum));
 				end
 	
 				% Convergence test
-				if n_levels>1
+				if n_levels>3
 					max_mean_diff = 0;
 					for idx=n_levels:max(n_levels-2,2)
 						if(abs(obj.levels(idx).Y_l)>max_mean_diff)
@@ -95,11 +97,36 @@ classdef MLMC
 					end
 				end
 
+				% If not converged, add a new level
 				if not(convergence)
+					% Use the theoretical results to add to the sum also the new
+					% level.
+					sum = obj.computeSumVarCost();
+					var_new_level = var(obj.levels(n_levels).Y_vec)/2^beta;
+					cost_new_level = (obj.m_0^obj.d*2^(n_levels))^obj.gamma;
+					sum = sum+sqrt(var_new_level*cost_new_level);
+
+					n_samples = ceil(2*eps^(-2)* ...
+						sqrt(var_new_level/cost_new_level)*sum); 
+
 					obj.levels = [obj.levels; 
-							Level(N_0,obj.d, obj.m_0*2^n_levels, true,obj.rfs)];
-						n_levels = n_levels + 1;
+							Level(n_samples,obj.d, obj.m_0*2^n_levels, false,obj.rfs)];
+					n_levels = n_levels + 1;
 				end
+			end
+		end
+	end
+
+	methods(Access=private)
+		function sum = computeSumVarCost(obj)
+			% Compute the sum over the levels of the square root of the product
+			% of the variance and the cost, necessary to compute the optimal
+			% number of samples for each level.
+			sum = 0;
+			for idx=1:length(obj.levels)
+				var_level = var(obj.levels(idx).Y_vec);
+				cost_level = (obj.m_0^obj.d*2^(idx-1))^obj.gamma;
+				sum = sum+sqrt(var_level*cost_level);
 			end
 		end
 	end
