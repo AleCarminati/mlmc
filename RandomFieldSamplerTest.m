@@ -13,6 +13,19 @@ loglog(1:length(r.eigenvalues),r.eigenvalues,"-.")
 legend("\lambda=0.01","\lambda=0.1","\lambda=1")
 ylim([1e-8 1])
 
+%% Test if A_n are such that the L-2 norm of b_n is 1.
+clc
+n_int = 10000;
+m_kl = 1400;
+r = RandomFieldSampler(m_kl,1,0.01,1);
+x_int = linspace(0,1,n_int);
+vec_int = zeros(m_kl,1);
+for idx=1:n_int
+	vec_int = vec_int + r.b_n(x_int(idx)).^2/n_int;
+end
+
+max(abs(vec_int-1))
+
 %% Create and plot a 1D random field
 clc
 m_kl = 800;

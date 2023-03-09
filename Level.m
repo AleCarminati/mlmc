@@ -86,8 +86,9 @@ classdef Level
 			if obj.d == 1 
 				% Numerically compute the left derivative of p in 1.
 				derivative = (solver.solutionPoints(end)- ...
-					solver.solutionPoints(end-1))/solver.m;
+					solver.solutionPoints(end-1))*solver.m;
 				value = - obj.randFieldSampl.computeRandomFieldValue(1)*derivative;
+
 			else
 				integral = 0;
 				% For each mesh, we numerically compute the integral of p in x_1=1,
@@ -95,7 +96,7 @@ classdef Level
 				% integration.
 				for idx=1:solver.m
 					derivative = (solver.solutionPoints(solver.m*idx)- ...
-						solver.solutionPoints(solver.m*idx-1))/solver.m;
+						solver.solutionPoints(solver.m*idx-1))*solver.m;
 					integral = integral - 1/solver.m* ...
 						obj.randFieldSampl.computeRandomFieldValue( ...
 						1,idx/solver.m-1/(2*solver.m))*derivative;

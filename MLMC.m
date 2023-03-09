@@ -44,7 +44,7 @@ classdef MLMC
 			means = zeros(n_levels,1);
 			for i=1:n_levels
 				fprintf("Level %d\n", i);
-				level = Level(100, obj.d, obj.m_0*2^i, false, obj.rfs);
+				level = Level(200, obj.d, obj.m_0*2^i, false, obj.rfs);
 				means(i) = level.Y_l;
 				variances(i) = var(level.Y_vec);
 			end
@@ -53,12 +53,16 @@ classdef MLMC
 			plot(1:n_levels,log2(abs(means)), "*-")
 			title("Mean of $Q_l-Q_{l-1}$", "Interpreter","latex")
 			xticks(1:n_levels)
+			ylim([-20,0])
+			yticks(-20:5:0)
 			xlabel("Level")
 			ylabel("$\log_2|$mean$|$","Interpreter","latex")
 			figure(2)
 			plot(1:n_levels, log2(variances), "*-")
-			title("Variance of $Q_l-Q_{l-1}$", "Interpreter","latex")
 			xticks(1:n_levels)
+			yticks(-20:5:0)
+			ylim([-20,0])
+			title("Variance of $Q_l-Q_{l-1}$", "Interpreter","latex")
 			xlabel("Level")
 			ylabel("$\log_2$ variance","Interpreter","latex")
 		end
