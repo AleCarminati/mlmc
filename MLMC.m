@@ -71,34 +71,40 @@ classdef MLMC
 			% This function runs the MLMC algorithm for a fixed error tolerance
 			% eps and a fixed convergence rate alpha.
 
-			N_0 = 10;
-			obj.levels = Level(N_0,obj.d, obj.m_0, true,obj.rfs);
-			n_levels = 1;
+			N_0 = 20;
+			obj.levels = [Level(N_0,obj.d, obj.m_0, true, obj.rfs);
+				Level(N_0,obj.d, obj.m_0*2, false, obj.rfs);
+				Level(N_0,obj.d, obj.m_0*2^2, false, obj.rfs)];
+			n_levels = 3;
 			convergence = false;
 			while not(convergence)
+				if n_levels ~= 3
+					fprintf("\n");
+				end
 				fprintf("Number of levels: %d\n", n_levels)
 				
 				% Compute optimal number of samples for each level and evaluate 
 				% extra samples.
-				sum = obj.computeSumVarCost;
+				sum = obj.computeSumVarCost();
 				for idx=1:n_levels
 					var_level = var(obj.levels(idx).Y_vec);
 					cost_level = (obj.m_0^obj.d*2^(idx-1))^obj.gamma;
-					obj.levels(idx) = obj.levels(idx).updateNumSamples( ...
-						ceil(2*eps^(-2)*sqrt(var_level/cost_level)*sum));
+					new_n_samples = ceil(2*eps^(-2)*sqrt(var_level/cost_level)*sum);
+					fprintf("Number of samples for level %d: %d\n", ...
+						idx-1,new_n_samples);
+					obj.levels(idx) =obj.levels(idx).updateNumSamples(new_n_samples);
 				end
 	
 				% Convergence test
-				if n_levels>3
-					max_mean_diff = 0;
-					for idx=n_levels:max(n_levels-2,2)
-						if(abs(obj.levels(idx).Y_l)>max_mean_diff)
-							max_mean_diff = abs(obj.levels(idx).Y_l);
-						end
+				max_mean_diff = 0;
+				for idx=n_levels:-1:(n_levels-2)
+					if(abs(obj.levels(idx).Y_l)>max_mean_diff)
+						max_mean_diff = abs(obj.levels(idx).Y_l);
 					end
-					if (max_mean_diff/(2^alpha-1)<eps/sqrt(2))
-						convergence = true;
-					end
+				end
+				% disp(max_mean_diff)
+				if (max_mean_diff/(2^alpha-1)<eps/sqrt(2))
+					convergence = true;
 				end
 
 				% If not converged, add a new level
@@ -112,11 +118,18 @@ classdef MLMC
 
 					n_samples = ceil(2*eps^(-2)* ...
 						sqrt(var_new_level/cost_new_level)*sum); 
-
 					obj.levels = [obj.levels; 
 							Level(n_samples,obj.d, obj.m_0*2^n_levels, false,obj.rfs)];
 					n_levels = n_levels + 1;
 				end
+			end
+		end
+
+		function cost = computeCost(obj)
+			cost = 0;
+			for idx=1:length(obj.levels)
+				cost = cost + obj.levels(idx).N_l* ...
+					obj.levels(idx).m^(obj.d*obj.gamma);
 			end
 		end
 	end
