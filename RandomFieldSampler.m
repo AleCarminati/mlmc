@@ -1,10 +1,13 @@
 classdef RandomFieldSampler
+	% It implements a random field generator using the Karhunen-Loeve 
+	% expansion (KL expansion) with exponential covariance function.
+
 	properties
-		d % Number of dimensions
+		d % Number of dimensions (1 or 2)
 		m_kl % Number of terms of the KL expansion
-		sigma2 % variance of exponential covariance function
-		lambda % correlation length of exponential covariance function
-		w % vectors of the solutions of the transcendental equation
+		sigma2 % variance of the exponential covariance function
+		lambda % correlation length of the exponential covariance function
+		w % vector of the solutions of the transcendental equation
 		eigenvalues % vector of the eigenvectors of the covariance function
 		xi % vector of the independent standard Gaussian variables of the KL 
 			% expansion 

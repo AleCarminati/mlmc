@@ -40,11 +40,12 @@ classdef MLMC
 			% - n_levels: the number of levels for which to compute the mean
 			%		and variance.
 
+			N_l = 500;
 			variances = zeros(n_levels,1);
 			means = zeros(n_levels,1);
 			for i=1:n_levels
 				fprintf("Level %d\n", i);
-				level = Level(200, obj.d, obj.m_0*2^i, false, obj.rfs);
+				level = Level(N_l, obj.d, obj.m_0*2^i, false, obj.rfs);
 				means(i) = level.Y_l;
 				variances(i) = var(level.Y_vec);
 			end
@@ -102,7 +103,6 @@ classdef MLMC
 						max_mean_diff = abs(obj.levels(idx).Y_l);
 					end
 				end
-				% disp(max_mean_diff)
 				if (max_mean_diff/(2^alpha-1)<eps/sqrt(2))
 					convergence = true;
 				end

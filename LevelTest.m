@@ -8,6 +8,7 @@ l = l.updateNumSamples(1);
 l.Y_l
 l = l.updateNumSamples(1000);
 l.Y_l
+abs(l.Y_l-mean(l.Y_vec))
 
 %% 1D test - Level > 0
 clc

@@ -13,6 +13,14 @@ loglog(1:length(r.eigenvalues),r.eigenvalues,"-.")
 legend("\lambda=0.01","\lambda=0.1","\lambda=1")
 ylim([1e-8 1])
 
+%% Test if w_n are the solution of the transcendental equation
+clc
+m_kl = 1400;
+lambda = 0.01;
+r = RandomFieldSampler(m_kl,1,lambda,1);
+sol = abs(tan(r.w)-(2*lambda.*r.w)./(lambda^2.*r.w.^2-1));
+max(sol)
+
 %% Test if A_n are such that the L-2 norm of b_n is 1.
 clc
 n_int = 10000;
@@ -36,7 +44,6 @@ r = RandomFieldSampler(m_kl,sigma2,lambda,1);
 x_plot = linspace(0,1,n_points_plot)';
 y_plot = r.computeRandomFieldValue(x_plot);
 plot(x_plot,y_plot)
-
 
 %% Create and plot a 2D random field
 clc
