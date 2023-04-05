@@ -125,14 +125,34 @@ classdef RandomFieldSampler
 
 			f = @(x) tan(x)-(2*obj.lambda.*x)./(obj.lambda^2.*x.^2-1);
 			w = zeros(obj.m_kl,1);
-			for idx=1:obj.m_kl
-				% To avoid problems with tan(x) near pi/2(idx+1), we add a little
-				% epsilon.
-				eps = 1e-12;
-				% Since f is an odd function and the eigenvalues are computed as 
-				% the square of the solution, only the positive solutions
-				% are returned.  
-				w(idx) = fzero(f,[pi/2*(2*idx-1)+eps, pi/2*(2*idx+1)-eps]);
+			% To avoid problems with tan(x) near pi/2(idx+1), we add a little
+			% epsilon.
+			eps = 1e-12;
+			idx_increased = false;
+			n_interval = 1;
+			if 1/obj.lambda<pi/2
+				% The exceptional case when the interval (0,pi/2] contains a zero. 
+				w(n_interval) = fzero(f,[1/obj.lambda+eps, pi/2-eps]);
+				idx_increased = true;
+			end
+			while n_interval+idx_increased<=obj.m_kl
+				if pi/2*(2*n_interval-1)+eps<1/obj.lambda && ...
+					1/obj.lambda<pi/2*(2*n_interval+1)-eps
+					% The exceptional case when the interval contains two zeros.
+					w(n_interval) = fzero( ...
+						f,[pi/2*(2*n_interval-1)+eps, 1/obj.lambda-eps]);
+					w(n_interval+1) = fzero( ...
+						f,[1/obj.lambda+eps, pi/2*(2*n_interval+1)-eps]);
+					n_interval = n_interval + 1;
+					idx_increased = true;
+				else
+					% Since f is an odd function and the eigenvalues are computed as 
+					% the square of the solution, only the positive solutions
+					% are returned.  
+					w(n_interval+idx_increased) = fzero( ...
+						f,[pi/2*(2*n_interval-1)+eps, pi/2*(2*n_interval+1)-eps]);
+					n_interval = n_interval+1;
+				end
 			end
 		end
 	end
