@@ -85,8 +85,11 @@ classdef Level
 
 			if obj.d == 1 
 				% Numerically compute the left derivative of p in 1.
-				derivative = (0-solver.solutionPoints(end))*2*solver.m;
-				value = - obj.randFieldSampl.computeRandomFieldValue(1)*derivative;
+				derivative = ... 
+					(solver.solutionPoints(end)-solver.solutionPoints(end-1))* ...
+					solver.m;
+				value = - obj.randFieldSampl.computeRandomFieldValue( ...
+					(solver.m-1)/solver.m)*derivative;
 
 			else
 				integral = 0;
@@ -94,10 +97,12 @@ classdef Level
 				% and we compute the integral of k using the midpoint rule for
 				% integration.
 				for idx=1:solver.m
-					derivative = (0-solver.solutionPoints(solver.m*idx))*2*solver.m;
+					derivative = ...
+						(solver.solutionPoints(solver.m*idx)- ...
+						solver.solutionPoints(solver.m*idx-1))*solver.m;
 					integral = integral - 1/solver.m* ...
 						obj.randFieldSampl.computeRandomFieldValue( ...
-						1,idx/solver.m-1/(2*solver.m))*derivative;
+						(solver.m-1)/solver.m,idx/solver.m-1/(2*solver.m))*derivative;
 				end
 				value = integral;
 			end
