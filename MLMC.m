@@ -46,7 +46,7 @@ classdef MLMC
 			for i=1:n_levels
 				fprintf("Level %d\n", i);
 				level = Level(N_l, obj.d, obj.m_0*2^i, false, obj.rfs);
-				means(i) = level.Y_l;
+				means(i) = mean(level.Y_vec);
 				variances(i) = var(level.Y_vec);
 			end
 
@@ -99,8 +99,8 @@ classdef MLMC
 				% Convergence test
 				max_mean_diff = 0;
 				for idx=n_levels:-1:(n_levels-2)
-					if(abs(obj.levels(idx).Y_l)>max_mean_diff)
-						max_mean_diff = abs(obj.levels(idx).Y_l);
+					if(abs(mean(obj.levels(idx).Y_vec))>max_mean_diff)
+						max_mean_diff = abs(mean(obj.levels(idx).Y_vec));
 					end
 				end
 				if (max_mean_diff/(2^alpha-1)<eps/sqrt(2))
