@@ -40,7 +40,7 @@ classdef MLMC
 			% - n_levels: the number of levels for which to compute the mean
 			%		and variance.
 
-			N_l = 500;
+			N_l = 1000;
 			variances = zeros(n_levels,1);
 			means = zeros(n_levels,1);
 			for i=1:n_levels

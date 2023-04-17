@@ -39,22 +39,18 @@ classdef FVSolver
 			end
 			
 			if d==1
-				centralPointsGrid = linspace(1/m,1-1/m,m)';
-				kCentralPointsGrid = k(centralPointsGrid);
-				k0 = kCentralPointsGrid(1);
-				k1 = kCentralPointsGrid(m);
 				A = zeros(m,m);
 				b = zeros(m,1);
-				b(1) = -2*k0;
-				harmMeans = 2./(1./kCentralPointsGrid(1:m-1)+1./ ...
-					kCentralPointsGrid(2:m));
-				A = A+diag(harmMeans,1)+diag(harmMeans,-1);
-				A = A-diag([2*k0+harmMeans(1);harmMeans(1:m-2)+harmMeans(2:m-1);...
-					2*k1+harmMeans(m-1)]);
+				b(1) = -2*k(0);
+				kValues = k(linspace(1/m,1-1/m,m-1)');
+				A = A+diag(kValues,1)+diag(kValues,-1);
+				A = A-diag([2*k(0)+kValues(1); ...
+					kValues(1:m-2)+kValues(2:m-1);...
+					2*k(1)+kValues(m-1)]);
 				obj.solutionPoints = A\b;
 			else
 				[centralPointsGrid_1, centralPointsGrid_2] =...
-					meshgrid(linspace(1/m,1-1/m,m)); 
+					meshgrid(linspace(1/(2*m),1-1/(2*m),m)); 
 				centralPointsGrid_1 = reshape(centralPointsGrid_1,[],1);
 				centralPointsGrid_2 = reshape(centralPointsGrid_2,[],1);
 				kcentralPointsGrid = k(centralPointsGrid_1, centralPointsGrid_2);
