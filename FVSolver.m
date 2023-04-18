@@ -109,9 +109,11 @@ classdef FVSolver
 						"values");
 				end
 				y = varargin{1};
-				if not(all(x(1,:)>=0)) || not(all(x(2,:)>=0)) || ...
-					not(all(x(1,:)<=1)) || not(all(x(2,:)<=1))
-					error("Invalid input: x must be in the range [0,1]x[0,1]");
+				if any(x<0 | x>1,"all") 
+					error("Invalid input: x must be in the range [0,1]");
+				end
+				if any(y<0 | y>1,"all") 
+					error("Invalid input: y must be in the range [0,1]");
 				end
 				% The first part of epression finds the row, while the second part
 				% of the expression finds the column. Given that solutionPoints is

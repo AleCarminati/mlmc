@@ -93,17 +93,17 @@ classdef RandomFieldSampler
 
 			value = zeros(length(x),1);
 			if obj.d == 1
-				for i=1:length(x)
-					value(i) = sum(obj.xi.*sqrt(obj.eigenvalues).*obj.b_n(x(i)));
-				end
+				temp = obj.xi.*sqrt(obj.eigenvalues);
+				value = arrayfun(@(x) temp'*obj.b_n(x),x);
 			else
+				temp = obj.xi.*sqrt(obj.eigenvalues(obj.idx_1_2d) ...
+						.*obj.eigenvalues(obj.idx_2_2d));
 				for i=1:length(x)
 					eigfun_res_x = obj.b_n(x(i));
 					eigfun_res_x = eigfun_res_x(obj.idx_1_2d);
 					eigfun_res_y = obj.b_n(y(i));
 					eigfun_res_y = eigfun_res_y(obj.idx_2_2d);
-					value(i) = sum(obj.xi.*sqrt(obj.eigenvalues(obj.idx_1_2d) ...
-						.*obj.eigenvalues(obj.idx_2_2d)).*eigfun_res_x.*eigfun_res_y);
+					value(i) = sum(temp.*eigfun_res_x.*eigfun_res_y);
 				end
 			end
 			value = exp(value);
