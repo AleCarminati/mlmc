@@ -40,7 +40,7 @@ classdef MLMC
 			% - n_levels: the number of levels for which to compute the mean
 			%		and variance.
 
-			N_l = 1000;
+			N_l = 500;
 			variances = zeros(n_levels,1);
 			means = zeros(n_levels,1);
 			for i=1:n_levels
@@ -54,15 +54,25 @@ classdef MLMC
 			plot(1:n_levels,log2(abs(means)), "*-")
 			title("Mean of $Q_l-Q_{l-1}$", "Interpreter","latex")
 			xticks(1:n_levels)
-			ylim([-20,0])
-			yticks(-20:5:0)
+			if obj.d==1
+				ylim([-20,0])
+				yticks(-20:5:0)
+			else
+				ylim([-15,0])
+				yticks(-15:5:0)
+			end
 			xlabel("Level")
 			ylabel("$\log_2|$mean$|$","Interpreter","latex")
 			figure(2)
 			plot(1:n_levels, log2(variances), "*-")
 			xticks(1:n_levels)
-			yticks(-20:5:0)
-			ylim([-20,0])
+			if obj.d==1
+				ylim([-20,0])
+				yticks(-20:5:0)
+			else
+				ylim([-15,0])
+				yticks(-15:5:0)
+			end
 			title("Variance of $Q_l-Q_{l-1}$", "Interpreter","latex")
 			xlabel("Level")
 			ylabel("$\log_2$ variance","Interpreter","latex")

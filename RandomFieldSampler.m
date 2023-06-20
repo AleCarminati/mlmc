@@ -49,7 +49,6 @@ classdef RandomFieldSampler
 				prodMatr = obj.eigenvalues*obj.eigenvalues';
 				prodVec = reshape(prodMatr,[],1);
 				[obj.eigenvalues, idx] = sort(prodVec,'descend');
-				% Remove all the zeros of the triangular matrix
 				obj.eigenvalues = obj.eigenvalues(1:obj.m_kl);
 				obj.idx_1_2d = obj.idx_1_2d(idx);
 				obj.idx_1_2d = obj.idx_1_2d(1:obj.m_kl);
