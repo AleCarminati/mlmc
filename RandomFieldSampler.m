@@ -1,6 +1,9 @@
-classdef RandomFieldSampler
+classdef RandomFieldSampler < handle
 	% It implements a random field generator using the Karhunen-Loeve 
 	% expansion (KL expansion) with exponential covariance function.
+	% It is a handle class, in this way it is possible to pass the functions 
+	% that modify the object content as function handles without losing the
+	% modifications.
 
 	properties
 		d % Number of dimensions (1 or 2)
@@ -13,11 +16,16 @@ classdef RandomFieldSampler
 			% expansion 
 		A_n % vector of the normalizing coefficents of the eigenfunctions of 
 			% the KL expansion in 1D
-		b_n % vector of the eigenfunctions of the KL expansion in 1D
+		b_n % vector of the eigenfunctions of the KL expansion in 1D.
+			% Input: (1,m) vector
+			% Output: (m_kl,m) vector
 		idx_1_2d % Indexes of the first 1D eigenvalue that is used in the 
 			% product to obtain the 2D eigenvalue
 		idx_2_2d % Indexes of the second 1D eigenvalue that is used in the 
 			% product to obtain the 2D eigenvalue
+		cache % Dictionary that contains the deterministic part of the KL 
+			% expansions as (m_kl,m) matrices. The keys are strings composed of m
+			% and the pointsSet type.
 	end
 	
 	methods
@@ -54,6 +62,7 @@ classdef RandomFieldSampler
 				obj.idx_1_2d = obj.idx_1_2d(1:obj.m_kl);
 				obj.idx_2_2d = obj.idx_2_2d(idx);
 				obj.idx_2_2d = obj.idx_2_2d(1:obj.m_kl);
+				obj.cache = dictionary();
 			end
 
 			obj.eigenvalues = obj.sigma2.*obj.eigenvalues;
@@ -65,10 +74,9 @@ classdef RandomFieldSampler
 		end
 		
 		function value = computeRandomFieldValue(obj,x,varargin)
-			if obj.d==2 && nargin~=3
-				error("Input error. When working in 2D, the input requires " + ...
-					"also the second coordinate.");
-			end
+			% This function could benefit from a parser, but the Matlab
+			% implementation of the parser is not efficient, slowing down the
+			% MLMC execution.
 
 			% Check that x is a column vector or a scalar.
 			if not(isscalar(x)) && size(x,2)~=1
@@ -77,6 +85,10 @@ classdef RandomFieldSampler
 			end
 
 			if obj.d==2 
+				if nargin<3
+					error("Input error. When working in 2D, the input " + ...
+						"requires also the second coordinate.");
+				end
 				y = varargin{1};
 				% Check that y is a column vector or a scalar.
 				if not(isscalar(y)) && size(y,2)~=1
@@ -88,19 +100,75 @@ classdef RandomFieldSampler
 					error("Input error. The inputs of the function to compute" + ...
 						" the random field value must have the same length");
 				end
+				if nargin==5
+					pointsSet = varargin{2};
+					m = varargin{3};
+					% Check that m is a scalar.
+					if ~isscalar(m)
+						error("Input error. The value of m should be scalar.")
+					end
+				end
 			end
 
 			if obj.d == 1
 				temp = obj.xi.*sqrt(obj.eigenvalues);
 				value = arrayfun(@(x) temp'*obj.b_n(x),x);
 			else
-				temp = obj.xi.*sqrt(obj.eigenvalues(obj.idx_1_2d) ...
-						.*obj.eigenvalues(obj.idx_2_2d));
-				eigfun_res_x = obj.b_n(x');
-				eigfun_res_x = eigfun_res_x(obj.idx_1_2d,:);
-				eigfun_res_y = obj.b_n(y');
-				eigfun_res_y = eigfun_res_y(obj.idx_2_2d,:);
-				value = (temp'*(eigfun_res_x.*eigfun_res_y))';
+				if nargin==5
+					% The first control is useful because isKey() returns an error if
+					% the dictionary is empty, like at the beginning of the
+					% experiment.
+					if numEntries(obj.cache)==0 || ~isKey(obj.cache,m+pointsSet)
+						switch pointsSet
+							case "cpx"
+								% "Central points x" case, i.e. the central points of the
+								% horizontal borders of the mesh squares.
+								[xpoints, ypoints] =...
+									meshgrid(linspace(1/(2*m),1-1/(2*m),m), ...
+									linspace(1/(m),1-1/(m),m-1));
+								xpoints = reshape(xpoints,1,[]);
+								ypoints = reshape(ypoints,1,[]);
+							case "cpy"
+								% "Central points y" case, i.e. the central points of the
+								% vertical borders of the mesh squares.
+								[xpoints, ypoints] =...
+									meshgrid(linspace(1/(m),1-1/(m),m-1), ...
+									linspace(1/(2*m),1-1/(2*m),m));
+								xpoints = reshape(xpoints,1,[]);
+								ypoints = reshape(ypoints,1,[]);
+							case "bl"
+								% "Border left" case, i.e., with x = 0.
+								xpoints =repelem(0,m);
+								ypoints = linspace(1/(2*m),1-1/(2*m),m);
+							case "br"
+								% "Border right" case, i.e., with x = 1.
+								xpoints =repelem(1,m);
+								ypoints = linspace(1/(2*m),1-1/(2*m),m);
+							otherwise
+								error("Input error. Points set string equal to '"+ ...
+									pointsSet+ "', which is not a supported value")
+						end
+						eigfun_res_x = obj.b_n(xpoints);
+						eigfun_res_x = eigfun_res_x(obj.idx_1_2d,:);
+						eigfun_res_y = obj.b_n(ypoints);
+						eigfun_res_y = eigfun_res_y(obj.idx_2_2d,:);
+						obj.cache(m+pointsSet) = {eigfun_res_x.*eigfun_res_y.*...
+								sqrt(obj.eigenvalues(obj.idx_1_2d) ...
+									.*obj.eigenvalues(obj.idx_2_2d))};
+					end
+					% It is not possible to save the a matrix as an object of a
+					% dictionary. Therefore, we have to save a cell containing the
+					% matrix, then extract the matrix.
+					value = cell2mat(obj.cache(m+pointsSet))'*obj.xi;
+				else
+					temp = obj.xi.*sqrt(obj.eigenvalues(obj.idx_1_2d) ...
+							.*obj.eigenvalues(obj.idx_2_2d));
+					eigfun_res_x = obj.b_n(x');
+					eigfun_res_x = eigfun_res_x(obj.idx_1_2d,:);
+					eigfun_res_y = obj.b_n(y');
+					eigfun_res_y = eigfun_res_y(obj.idx_2_2d,:);
+					value = (temp'*(eigfun_res_x.*eigfun_res_y))';
+				end
 			end
 			value = exp(value);
 		end
@@ -117,7 +185,7 @@ classdef RandomFieldSampler
 			% This function finds the solutions to a transcendental equation 
 			% using the fzero function in Matlab.
 			% Output:
-			% - w: a vector of size m_kl containing the computed solutions
+			% - w: a (m_kl,1) vector containing the computed solutions
 
 			f = @(x) tan(x)-(2*obj.lambda.*x)./(obj.lambda^2.*x.^2-1);
 			w = zeros(obj.m_kl,1);

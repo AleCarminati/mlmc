@@ -54,14 +54,17 @@ classdef Level
 			% QoI using an FVSolver object. If the level is not the first level,
 			% it also subtracts the QoI computed from the previous level.
 
-			obj.rfs = obj.rfs.updateRandom();
+			obj.rfs.updateRandom();
 			% Workaround to pass the method as a function handle.
 			if obj.d==1
 				f = @(x) obj.rfs.computeRandomFieldValue(x);
 			else
-				f = @(x,y) obj.rfs.computeRandomFieldValue(x,y);
+				% We pass 0 as coordinates because the function ignores these 
+				% values, given that it uses the pointsSet variable to find which
+				% coordinates are required. 
+				f =@(pointsSet,m) obj.rfs.computeRandomFieldValue(0,0,pointsSet,m);
 			end
-			solver = FVSolver(obj.d, f,obj.m);
+			solver = FVSolver(obj.d, f, obj.m);
 			value = obj.getQoI(solver);
 			if not(obj.isLevel0)
 				solver = FVSolver(obj.d, f,obj.m/2);
@@ -84,8 +87,8 @@ classdef Level
 				derivative = ...
  						(0-solver.solutionPoints(solver.m*idx))*solver.m*2;
 				value = - 1/solver.m* ...
- 						obj.rfs.computeRandomFieldValue( ...
-						repelem(1,solver.m)',idx/solver.m-1/(2*solver.m))'*derivative;
+ 						obj.rfs.computeRandomFieldValue(0,0,"br",solver.m)'*derivative;
+
 			end
 		end
 	end

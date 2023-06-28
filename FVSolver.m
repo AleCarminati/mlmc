@@ -49,46 +49,33 @@ classdef FVSolver
 					2*k(1)+kValues(m-1)]);
 				obj.solutionPoints = A\b;
 			else
-				[centralPointsGrid_1, centralPointsGrid_2] =...
-					meshgrid(linspace(1/(2*m),1-1/(2*m),m)); 
-				centralPointsGrid_1 = reshape(centralPointsGrid_1,[],1);
-				centralPointsGrid_2 = reshape(centralPointsGrid_2,[],1);
-				kcentralPointsGrid = k(centralPointsGrid_1, centralPointsGrid_2);
-				kcentralPointsGrid = reshape(kcentralPointsGrid,m,m);
-				% Compute the harmonic means between k_{i,j} and k_{i+1,j}
-				harmMeans_1 = 2./(1./kcentralPointsGrid(1:m-1,:)+1./ ...
-					kcentralPointsGrid(2:m,:));
-				% Compute the harmonic means between k_{i,j} and k_{i,j+1}
-				harmMeans_2 = 2./(1./kcentralPointsGrid(:,1:m-1)+1./ ...
-					kcentralPointsGrid(:,2:m));
+				midPoints_ver = reshape(k("cpy",obj.m),m,m-1);
 
-				A = zeros(m^2,m^2);
-
-				% Concatenate the harmonic means with a column of zeros. This
-				% column is useful to put a zero every m steps, i.e. where we are
-				% in k_{i,m}.
-				diag1 = [harmMeans_2, zeros(m,1)]';
+				% Concatenate the midpoints of the vertical segments of the mesh 
+				% grid with a column of zeros. This column is useful to put a zero 
+				% every m steps, i.e. where we are in k_{i,m}.
+				diag1 = [midPoints_ver, zeros(m,1)]';
 				% Reshape the matrix into a column vector
 				diag1 = reshape(diag1, m^2,1);
 				% Remove the last element of the column vector to make it a
 				% (m^2-1)x1 vector
 				diag1 = diag1(1:m^2-1);
 
-				diagM = reshape(harmMeans_1',m*(m-1),1);
+				diagM = k("cpx",obj.m);
 
-				A = A - diag(diag1,1)-diag(diag1,-1)-diag(diagM,m)-diag(diagM,-m); 
+				A = - diag(diag1,1)-diag(diag1,-1)-diag(diagM,m)-diag(diagM,-m);
 
 				% b is constructed so that every m elements there is the element
 				% 2*k_{i,1}
 				tempTable = zeros(m,m);
-				tempTable(1,:) = kcentralPointsGrid(:,1)';
+				tempTable(1,:) = k("bl",obj.m);
 				b = 2*reshape(tempTable,m^2,1);
 
 				% The main diagonal of A is such that every m elements there is the
 				% element 2*k_{i,1}, every element (traslated by 1) there is the
 				% element 2*k_{i,m} and then there is the sum of all the other
-				% diagonals.
-				tempTable(m,:) = kcentralPointsGrid(:,m)';
+				% diagonals. 
+				tempTable(m,:) =  k("br",obj.m); 
 				diag0 = 2*reshape(tempTable,m^2,1)-sum(A,2);
 
 				A = A + diag(diag0);
