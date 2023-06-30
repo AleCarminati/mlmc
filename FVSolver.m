@@ -27,56 +27,57 @@ classdef FVSolver
 					error("Invalid function k, it requires %d inputs while it "+...
 						"should require 1 input", nargin(k));
 				end
-				obj.solutionPoints = zeros(m);
+				obj.solutionPoints = zeros(obj.m);
 			elseif d==2
 				if nargin(k)~=2
 					error("Invalid function k, it requires %d inputs while it "+...
 						"should require 2 inputs", nargin(k));
 				end
-				obj.solutionPoints = zeros(m^2);
+				obj.solutionPoints = zeros(obj.m^2);
 			else
 				error("Invalid input: d=%d, but d must be equal to 1 or 2.", d);
 			end
 			
 			if d==1
-				A = zeros(m,m);
-				b = zeros(m,1);
+				A = zeros(obj.m,obj.m);
+				b = zeros(obj.m,1);
 				b(1) = -2*k(0);
-				kValues = k(linspace(1/m,1-1/m,m-1)');
+				kValues = k(linspace(1/obj.m,1-1/obj.m,obj.m-1)');
 				A = A+diag(kValues,1)+diag(kValues,-1);
 				A = A-diag([2*k(0)+kValues(1); ...
-					kValues(1:m-2)+kValues(2:m-1);...
-					2*k(1)+kValues(m-1)]);
+					kValues(1:obj.m-2)+kValues(2:obj.m-1);...
+					2*k(1)+kValues(obj.m-1)]);
 				obj.solutionPoints = A\b;
 			else
-				midPoints_ver = reshape(k("cpy",obj.m),m,m-1);
+				midPoints_ver = reshape(k("cpy",obj.m),obj.m,obj.m-1);
 
 				% Concatenate the midpoints of the vertical segments of the mesh 
 				% grid with a column of zeros. This column is useful to put a zero 
 				% every m steps, i.e. where we are in k_{i,m}.
-				diag1 = [midPoints_ver, zeros(m,1)]';
+				diag1 = [midPoints_ver, zeros(obj.m,1)]';
 				% Reshape the matrix into a column vector
-				diag1 = reshape(diag1, m^2,1);
+				diag1 = reshape(diag1, obj.m^2,1);
 				% Remove the last element of the column vector to make it a
 				% (m^2-1)x1 vector
-				diag1 = diag1(1:m^2-1);
+				diag1 = diag1(1:obj.m^2-1);
 
 				diagM = k("cpx",obj.m);
 
-				A = - diag(diag1,1)-diag(diag1,-1)-diag(diagM,m)-diag(diagM,-m);
+				A = - diag(diag1,1)-diag(diag1,-1)-diag(diagM,obj.m)- ...
+					diag(diagM,-obj.m);
 
 				% b is constructed so that every m elements there is the element
 				% 2*k_{i,1}
-				tempTable = zeros(m,m);
+				tempTable = zeros(obj.m,obj.m);
 				tempTable(1,:) = k("bl",obj.m);
-				b = 2*reshape(tempTable,m^2,1);
+				b = 2*reshape(tempTable,obj.m^2,1);
 
 				% The main diagonal of A is such that every m elements there is the
 				% element 2*k_{i,1}, every element (traslated by 1) there is the
 				% element 2*k_{i,m} and then there is the sum of all the other
 				% diagonals. 
 				tempTable(m,:) =  k("br",obj.m); 
-				diag0 = 2*reshape(tempTable,m^2,1)-sum(A,2);
+				diag0 = 2*reshape(tempTable,obj.m^2,1)-sum(A,2);
 
 				A = A + diag(diag0);
 
