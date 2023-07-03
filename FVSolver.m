@@ -63,9 +63,13 @@ classdef FVSolver
 
 				diagM = k("cpx",obj.m);
 
-				A = - diag(diag1,1)-diag(diag1,-1)-diag(diagM,obj.m)- ...
-					diag(diagM,-obj.m);
-
+				% Prepare the vectors to be inserted as diagonals in the sparse
+				% matrix.
+				d1 = [diagM;zeros(obj.m,1)];
+				d2 = [diag1;0];
+				d3 = [0;diag1];
+				d4 = [zeros(obj.m,1);diagM];
+					
 				% b is constructed so that every m elements there is the element
 				% 2*k_{i,1}
 				tempTable = zeros(obj.m,obj.m);
@@ -77,9 +81,10 @@ classdef FVSolver
 				% element 2*k_{i,m} and then there is the sum of all the other
 				% diagonals. 
 				tempTable(m,:) =  k("br",obj.m); 
-				diag0 = 2*reshape(tempTable,obj.m^2,1)-sum(A,2);
+				diag0 = 2*reshape(tempTable,obj.m^2,1)+d1+d2+d3+d4;
 
-				A = A + diag(diag0);
+				A = spdiags([-d1,-d2,diag0,-d3,-d4],[-obj.m,-1,0,1,obj.m], ...
+					obj.m^2,obj.m^2);
 
 				obj.solutionPoints = A\b;
 			end
