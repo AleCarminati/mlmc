@@ -57,7 +57,8 @@ classdef Level
 			obj.rfs.updateRandom();
 			% Workaround to pass the method as a function handle.
 			if obj.d==1
-				f = @(x) obj.rfs.computeRandomFieldValue(x);
+				f = @(x,varargin) obj.rfs.computeRandomFieldValue(x, ...
+					varargin{1},varargin{2}); 
 			else
 				% We pass 0 as coordinates because the function ignores these 
 				% values, given that it uses the pointsSet variable to find which
@@ -77,11 +78,10 @@ classdef Level
 
 			if obj.d == 1 
 				derivative = ... 
-					(solver.solutionPoints(end)-solver.solutionPoints(end-1))* ...
-					solver.m;
-				value = - obj.rfs.computeRandomFieldValue( ...
-					(solver.m-1)/solver.m)*derivative;
-
+					(0-solver.solutionPoints(end))* ...
+					2*solver.m;
+				kExt = obj.rfs.computeRandomFieldValue(0,"ext",solver.m);
+				value = - kExt(2)*derivative;
 			else
 				idx =(1:solver.m)';
 				derivative = ...
