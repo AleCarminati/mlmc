@@ -29,8 +29,8 @@ classdef FVSolver
 			
 			if obj.d==1
 				b = sparse(obj.m,1);
-				kExt = k(0,"ext",obj.m);
-				kValues = k(0,"cen",obj.m);
+				kExt = k("ext",obj.m);
+				kValues = k("cen",obj.m);
 				b(1) = -2*kExt(1);
 
 				d1 = [kValues;0];

@@ -57,8 +57,7 @@ classdef Level
 			obj.rfs.updateRandom();
 			% Workaround to pass the method as a function handle.
 			if obj.d==1
-				f = @(x,varargin) obj.rfs.computeRandomFieldValue(x, ...
-					varargin{1},varargin{2}); 
+				f = @(pointsSet,m) obj.rfs.computeRandomFieldValue(0, pointsSet,m); 
 			else
 				% We pass 0 as coordinates because the function ignores these 
 				% values, given that it uses the pointsSet variable to find which
