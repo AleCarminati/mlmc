@@ -34,13 +34,13 @@ classdef MLMC
 			obj.rfs =RandomFieldSampler(obj.m_kl, obj.sigma2, obj.lambda, obj.d);
 		end
 
-		function obj = plot_var_mean(obj, n_levels)
+		function obj = plot_var_mean(obj, n_levels, N_l)
 			% This function plots the mean and variance of each level of MLMC 
 			% method, using a logarithmic scale. It takes in an arguments:
 			% - n_levels: the number of levels for which to compute the mean
 			%		and variance.
-
-			N_l = 500;
+			% - N_l: the number of samples for each level.
+			
 			variances = zeros(n_levels,1);
 			means = zeros(n_levels,1);
 			for i=1:n_levels
