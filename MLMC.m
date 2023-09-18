@@ -82,7 +82,7 @@ classdef MLMC
 			% This function runs the MLMC algorithm for a fixed error tolerance
 			% eps and a fixed convergence rate alpha.
 
-			N_0 = 20;
+			N_0 = 50;
 			obj.levels = [Level(N_0,obj.d, obj.m_0, true, obj.rfs);
 				Level(N_0,obj.d, obj.m_0*2, false, obj.rfs);
 				Level(N_0,obj.d, obj.m_0*2^2, false, obj.rfs)];
